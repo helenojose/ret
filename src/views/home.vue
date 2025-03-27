@@ -169,7 +169,9 @@ input, select {
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 14px;
+  
 }
+
 
 button {
   width: 100%;

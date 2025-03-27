@@ -5,26 +5,55 @@
       <label for="dataFiltro">Escolha o dia:</label>
       <input type="date" v-model="dataFiltro" id="dataFiltro" />
       <button @click="filtrarPorData">Buscar</button>
+      <!-- Botão para excluir TODOS os agendamentos do dia filtrado -->
+      <button v-if="dataFiltro" @click="limparAgendamentos" class="excluir-todos">
+        Excluir Todos do Dia
+      </button>
     </div>
     <div v-if="dataFiltro" class="results">
       <h2>Pendentes</h2>
       <div v-if="filteredPendentes.length" class="agendamento-list">
-        <div v-for="(agendamento, index) in filteredPendentes" :key="index" class="agendamento-card">
+        <div
+          v-for="(agendamento, index) in filteredPendentes"
+          :key="index"
+          class="agendamento-card"
+        >
           <h3>{{ agendamento.nome }}</h3>
-          <p>{{ agendamento.servico }} - {{ agendamento.hora }} - R$ {{ agendamento.valor }}</p>
-          <button @click="marcarConcluido(agendamento)">Concluído</button>
+          <p>
+            {{ agendamento.servico }} - {{ agendamento.hora }} - R$
+            {{ agendamento.valor }}
+          </p>
+          <div class="btn-actions">
+            <button @click="marcarConcluido(agendamento)">Concluído</button>
+            <!-- Botão para excluir o agendamento individual -->
+            <button @click="excluirAgendamento(agendamento)" class="excluir">
+              Excluir
+            </button>
+          </div>
         </div>
       </div>
-      <p v-else class="no-result">Nenhum agendamento pendente para essa data.</p>
-      
+      <p v-else class="no-result">
+        Nenhum agendamento pendente para essa data.
+      </p>
+
       <h2>Concluídos</h2>
       <div v-if="filteredConcluidos.length" class="agendamento-list">
-        <div v-for="(agendamento, index) in filteredConcluidos" :key="index" class="agendamento-card">
+        <div
+          v-for="(agendamento, index) in filteredConcluidos"
+          :key="index"
+          class="agendamento-card"
+        >
           <h3>{{ agendamento.nome }}</h3>
-          <p>{{ agendamento.servico }} - {{ agendamento.hora }} - R$ {{ agendamento.valor }}</p>
+          <p>
+            {{ agendamento.servico }} - {{ agendamento.hora }} - R$
+            {{ agendamento.valor }}
+          </p>
+          <!-- Aqui você pode adicionar um botão para excluir se desejar -->
         </div>
       </div>
-      <p v-else class="no-result">Nenhum agendamento concluído para essa data.</p>
+      <p v-else class="no-result">
+        Nenhum agendamento concluído para essa data.
+      </p>
     </div>
     <div v-else class="no-filter">
       <p>Por favor, escolha uma data e clique em "Buscar".</p>
@@ -41,10 +70,14 @@ export default {
   },
   computed: {
     filteredPendentes() {
-      return this.$store.getters.agendamentosFiltrados.filter(a => a.status === 'pendente');
+      return this.$store.getters.agendamentosFiltrados.filter(
+        a => a.status === 'pendente'
+      );
     },
     filteredConcluidos() {
-      return this.$store.getters.agendamentosFiltrados.filter(a => a.status === 'concluido');
+      return this.$store.getters.agendamentosFiltrados.filter(
+        a => a.status === 'concluido'
+      );
     },
   },
   methods: {
@@ -54,8 +87,25 @@ export default {
     marcarConcluido(agendamento) {
       this.$store.dispatch('marcarConcluido', agendamento);
     },
+    // Método para excluir um agendamento individual
+    excluirAgendamento(agendamento) {
+      this.$store.dispatch('excluirAgendamento', agendamento);
+       this.filtrarPorData();
+    },
+    // Método para excluir todos os agendamentos daquele dia
+    limparAgendamentos() {
+      this.$store.dispatch('limparAgendamentos', this.dataFiltro);
+      this.filtrarPorData();
+    },
   },
   created() {
+    // Verifica se a URL possui o parâmetro de acesso exclusivo para admin
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('key') !== 'secreta') {
+      alert('Acesso Restrito!');
+      this.$router.push('/');
+      return;
+    }
     this.$store.dispatch('carregarAgendamentos');
   },
 };
@@ -68,7 +118,7 @@ export default {
   padding: 20px;
   background: #ffffff;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-family: 'Arial', sans-serif;
 }
 
@@ -97,7 +147,7 @@ h1 {
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  width: 150px; /* Tamanho reduzido para o input de data */
+  width: 150px;
 }
 
 .filter-section button {
@@ -111,9 +161,23 @@ h1 {
 }
 
 .filter-section button:hover {
-  background: #45a049;
+  background: #16ac55;
 }
 
+/* Botão para excluir todos os agendamentos do dia */
+.filter-section button.excluir-todos {
+  padding: 6px 12px;
+  font-size: 14px;
+  background: #e74c3c; /* Vermelho */
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.filter-section button.excluir-todos:hover {
+  background: #c0392b; /* Vermelho mais escuro */
+}
 .results h2 {
   margin-top: 30px;
   color: #333;
@@ -131,7 +195,7 @@ h1 {
   background: #e0f7fa;
   border-radius: 10px;
   padding: 15px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -149,8 +213,12 @@ h1 {
   font-size: 16px;
 }
 
+.btn-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .agendamento-card button {
-  align-self: flex-start;
   padding: 6px 10px;
   background: #4CAF50;
   color: #fff;
@@ -164,7 +232,17 @@ h1 {
   background: #45a049;
 }
 
-.no-result, .no-filter {
+/* Botão para excluir agendamento individual */
+.agendamento-card button.excluir {
+  background: #e74c3c;
+}
+
+.agendamento-card button.excluir:hover {
+  background: #c0392b;
+}
+
+.no-result,
+.no-filter {
   text-align: center;
   color: #777;
   margin-top: 20px;

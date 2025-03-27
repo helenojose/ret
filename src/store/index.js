@@ -25,6 +25,18 @@ export const store = createStore({
         state.agendamentos[index].status = 'concluido';
       }
     },
+    EXCLUIR_AGENDAMENTO(state, agendamento) {
+      state.agendamentos = state.agendamentos.filter(a =>
+        !(a.nome === agendamento.nome &&
+          a.data === agendamento.data &&
+          a.hora === agendamento.hora &&
+          a.valor === agendamento.valor)
+      );
+    },
+    
+    LIMPAR_AGENDAMENTOS_DO_DIA(state, data) {
+      state.agendamentos = state.agendamentos.filter(a => a.data !== data);
+    },
   },
   actions: {
     addAgendamento({ commit, state }, agendamento) {
@@ -42,6 +54,15 @@ export const store = createStore({
     },
     marcarConcluido({ commit, state }, agendamento) {
       commit('MARCAR_CONCLUIDO', agendamento);
+      localStorage.setItem('agendamentos', JSON.stringify(state.agendamentos));
+    },
+    excluirAgendamento({ commit, state }, agendamento) {
+      commit('EXCLUIR_AGENDAMENTO', agendamento);
+      localStorage.setItem('agendamentos', JSON.stringify(state.agendamentos));
+    },
+    // Ação para excluir todos os agendamentos do dia informado
+    limparAgendamentos({ commit, state }, data) {
+      commit('LIMPAR_AGENDAMENTOS_DO_DIA', data);
       localStorage.setItem('agendamentos', JSON.stringify(state.agendamentos));
     },
   },
