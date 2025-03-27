@@ -1,9 +1,8 @@
 <template>
   <div class="auth-container">
-    
     <div class="form-container cadastro">
       <h2>Cadastro</h2>
-      <form @submit.prevent="register">  <!-- Cadastro -->
+      <form @submit.prevent="register">
         <div class="form-group">
           <label for="cadastro-email">Email</label>
           <input id="cadastro-email" type="email" placeholder="Digite seu email" v-model="email"/>
@@ -16,48 +15,55 @@
         <button @click.prevent="signInWithGoogle">Entrar com a conta do Google</button>
       </form>
     </div>
- 
-    
+    <div v-if="showModal" class="modal">
+    <div class="modal-content">
+      <h3>Cadastro realizado com sucesso!</h3>
+    </div>
   </div>
+  </div>
+
+  <!-- Modal de Sucesso -->
+  
 </template>
 
 <script setup>
-import { ref } from "vue"
-import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
-import { useRouter } from 'vue-router'
+import { ref } from "vue";
+import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useRouter } from 'vue-router';
+
 const email = ref("");
 const password = ref("");
-const router = useRouter()
-const popup = ref(null);
+const showModal = ref(false);
+const router = useRouter();
 
 const register = () => {
     const auth = getAuth();
     createUserWithEmailAndPassword(auth, email.value, password.value)
     .then((userCredential) => {
-        alert("Cadastrado com sucesso!");
-        console.log(userCredential.user);
-        router.push('/login');  // Redireciona para a home após cadastro
+        showModal.value = true;  // Exibe o modal de sucesso
+        setTimeout(() => {
+            showModal.value = false;
+            router.push('/login');
+        }, 2000); // Fecha o modal e redireciona após 2 segundos
     })
     .catch((error) => {
         console.log(error.code);
-        alert(error.message);
+        alert(error.message); // Alerta para erros
     });
 };
-
 
 const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     signInWithPopup(getAuth(), provider)
-      .then((result) =>{
-        console.log(result.user)
-        router.push("/login")
+      .then((result) => {
+        console.log(result.user);
+        router.push("/login");
       })
-      .catch((error) =>{
-
-      })
-}
+      .catch((error) => {
+        // Lide com erros se necessário
+      });
+};
 </script>
-
 
 <style scoped>
 /* Container principal */
@@ -88,7 +94,7 @@ const signInWithGoogle = () => {
   color: #333;
 }
 
-/* Grupos de inputs - deslocados para a esquerda */
+/* Grupos de inputs */
 .form-group {
   margin-bottom: 1.25rem;
   text-align: left;
@@ -135,51 +141,29 @@ button:hover {
   transform: translateY(-2px);
 }
 
-/* Botão Google */
-.google-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  color: #555;
-}
-
-.google-btn img {
-  width: 20px;
-  margin-right: 0.5rem;
-}
-
-/* Divisor */
-.divider {
-  margin: 1rem 0;
-  font-size: 0.9rem;
-  color: #aaa;
-  position: relative;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 40%;
-  height: 1px;
-  background-color: #ddd;
-}
-
-.divider::before {
+/* Modal de Sucesso */
+.modal {
+  position: fixed;
+  top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
-.divider::after {
-  right: 0;
+.modal-content {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-  .form-container {
-    width: 90%;
-  }
+.modal-content h3 {
+  font-size: 1.5rem;
+  color: #5563DE;
 }
 </style>

@@ -1,60 +1,35 @@
 <template>
   <div class="admin-container">
     <h1>Admin - Agendamentos</h1>
+    
     <div class="filter-section">
       <label for="dataFiltro">Escolha o dia:</label>
       <input type="date" v-model="dataFiltro" id="dataFiltro" />
       <button @click="filtrarPorData">Buscar</button>
-      <!-- Botão para excluir TODOS os agendamentos do dia filtrado -->
-      <button v-if="dataFiltro" @click="limparAgendamentos" class="excluir-todos">
-        Excluir Todos do Dia
-      </button>
     </div>
+
     <div v-if="dataFiltro" class="results">
       <h2>Pendentes</h2>
       <div v-if="filteredPendentes.length" class="agendamento-list">
-        <div
-          v-for="(agendamento, index) in filteredPendentes"
-          :key="index"
-          class="agendamento-card"
-        >
+        <div v-for="agendamento in filteredPendentes" :key="agendamento.id" class="agendamento-card">
           <h3>{{ agendamento.nome }}</h3>
-          <p>
-            {{ agendamento.servico }} - {{ agendamento.hora }} - R$
-            {{ agendamento.valor }}
-          </p>
-          <div class="btn-actions">
-            <button @click="marcarConcluido(agendamento)">Concluído</button>
-            <!-- Botão para excluir o agendamento individual -->
-            <button @click="excluirAgendamento(agendamento)" class="excluir">
-              Excluir
-            </button>
-          </div>
+          <p>{{ agendamento.servico }} - {{ agendamento.hora }} - R$ {{ agendamento.valor }}</p>
+          <button @click="marcarConcluido(agendamento)">Concluído</button>
+          <button @click="excluirAgendamento(agendamento)" class="excluir">Excluir</button>
         </div>
       </div>
-      <p v-else class="no-result">
-        Nenhum agendamento pendente para essa data.
-      </p>
+      <p v-else class="no-result">Nenhum agendamento pendente para essa data.</p>
 
       <h2>Concluídos</h2>
       <div v-if="filteredConcluidos.length" class="agendamento-list">
-        <div
-          v-for="(agendamento, index) in filteredConcluidos"
-          :key="index"
-          class="agendamento-card"
-        >
+        <div v-for="agendamento in filteredConcluidos" :key="agendamento.id" class="agendamento-card">
           <h3>{{ agendamento.nome }}</h3>
-          <p>
-            {{ agendamento.servico }} - {{ agendamento.hora }} - R$
-            {{ agendamento.valor }}
-          </p>
-          <!-- Aqui você pode adicionar um botão para excluir se desejar -->
+          <p>{{ agendamento.servico }} - {{ agendamento.hora }} - R$ {{ agendamento.valor }}</p>
         </div>
       </div>
-      <p v-else class="no-result">
-        Nenhum agendamento concluído para essa data.
-      </p>
+      <p v-else class="no-result">Nenhum agendamento concluído para essa data.</p>
     </div>
+
     <div v-else class="no-filter">
       <p>Por favor, escolha uma data e clique em "Buscar".</p>
     </div>
@@ -70,46 +45,44 @@ export default {
   },
   computed: {
     filteredPendentes() {
-      return this.$store.getters.agendamentosFiltrados.filter(
-        a => a.status === 'pendente'
-      );
+      return this.$store.getters.agendamentosFiltrados.filter(a => a.status === 'pendente');
     },
     filteredConcluidos() {
-      return this.$store.getters.agendamentosFiltrados.filter(
-        a => a.status === 'concluido'
-      );
+      return this.$store.getters.agendamentosFiltrados.filter(a => a.status === 'concluido');
     },
   },
   methods: {
     filtrarPorData() {
+      if (!this.dataFiltro) {
+        alert("Escolha uma data válida!");
+        return;
+      }
       this.$store.dispatch('filtrarPorData', this.dataFiltro);
     },
     marcarConcluido(agendamento) {
       this.$store.dispatch('marcarConcluido', agendamento);
     },
-    // Método para excluir um agendamento individual
     excluirAgendamento(agendamento) {
       this.$store.dispatch('excluirAgendamento', agendamento);
-       this.filtrarPorData();
-    },
-    // Método para excluir todos os agendamentos daquele dia
-    limparAgendamentos() {
-      this.$store.dispatch('limparAgendamentos', this.dataFiltro);
       this.filtrarPorData();
     },
   },
   created() {
-    // Verifica se a URL possui o parâmetro de acesso exclusivo para admin
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') !== 'secreta') {
       alert('Acesso Restrito!');
       this.$router.push('/');
       return;
     }
-    this.$store.dispatch('carregarAgendamentos');
+    this.$store.dispatch('carregarAgendamentos', true);
   },
 };
 </script>
+
+
+
+<!-- (Os estilos permanecem inalterados) -->
+
 
 <style scoped>
 .admin-container {

@@ -1,16 +1,15 @@
+// main.js
 import { createApp } from 'vue';
-import './style.css';
+import App from './App.vue';
 import router from './routes';
 import { store } from './store';
-import App from './App.vue';
+import './style.css';
 
-// Import the functions you need from the SDKs you need
+// Firebase initialization and logic estão aqui
 import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDUk_A1aKbP_pHtKYitXqSpFE0Hznhk8dY",
   authDomain: "sistema-cadastro-185ce.firebaseapp.com",
@@ -20,11 +19,14 @@ const firebaseConfig = {
   appId: "1:119149461568:web:be77b67789ba79c00e9fa5"
 };
 
-// Initialize Firebase
 const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 const auth = getAuth(firebaseApp);
-export { auth };
-createApp(App)
-.use(store)
-.use(router)
-.mount('#app')
+
+const app = createApp(App);
+app.use(store);
+app.use(router);
+app.mount('#app');
+
+// Exporta os objetos Firebase para uso em outros módulos (como o store)
+export { db, auth };

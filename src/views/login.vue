@@ -1,25 +1,32 @@
 <template>
-    <div class="auth-container">
-        <div class="form-container login">
-            <h2>Login</h2>
-            <form @submit.prevent="login">
-                <div class="form-group">
-                    <label for="login-email">Email</label>
-                    <input id="login-email" type="email" placeholder="Digite seu email" v-model="email"/>
-                </div>
-                <div class="form-group">
-                    <label for="login-senha">Senha</label>
-                    <input id="login-senha" type="password" placeholder="Digite sua senha" v-model="password"/>
-                    <p v-if="errMsg">{{ errMsg }}</p>
-                </div>
-                <button @click.prevent="login">Entrar</button>
-                <button @click.prevent="signInWithGoogle">Entrar com a conta do Google</button>
-                <p class="no-account">Não tem uma conta?</p>
-                <button class="register-btn" @click="goToRegister">Cadastre-se</button>
-            </form>
+  <div class="auth-container">
+    <div class="form-container login">
+      <h2>Login</h2>
+      <form @submit.prevent="login">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" placeholder="Digite seu email" v-model="email"/>
         </div>
-        
+        <div class="form-group">
+          <label for="login-senha">Senha</label>
+          <input id="login-senha" type="password" placeholder="Digite sua senha" v-model="password"/>
+          <p v-if="errMsg">{{ errMsg }}</p>
+        </div>
+        <button @click.prevent="login">Entrar</button>
+        <button @click.prevent="signInWithGoogle">Entrar com a conta do Google</button>
+        <p class="no-account">Não tem uma conta?</p>
+        <button class="register-btn" @click="goToRegister">Cadastre-se</button>
+      </form>
     </div>
+    <div v-if="showModal" class="modal">
+    <div class="modal-content">
+      <h3>Login realizado com sucesso!</h3>
+    </div>
+  </div>
+  </div>
+
+  <!-- Modal de Sucesso -->
+  
 </template>
 
 <script setup>
@@ -27,20 +34,21 @@ import { ref } from "vue";
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useRouter } from 'vue-router';
 
-
 const email = ref("");
 const password = ref("");
 const errMsg = ref();
+const showModal = ref(false);
 const router = useRouter();
-const popup = ref(null);
-
 
 const login = async () => {
     const auth = getAuth();
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
-        alert("Login efetuado com sucesso!", userCredential.user);
-        router.push('/home');
+        showModal.value = true;  // Exibe o modal de sucesso
+        setTimeout(() => {
+            showModal.value = false;
+            router.push('/home');
+        }, 2000); // Fecha o modal e redireciona após 2 segundos
     } catch (error) {
         console.log(error.code);
         switch (error.code) {
@@ -148,41 +156,43 @@ button {
   margin-bottom: 1rem;
 }
 
+.register-btn{
+    background: rgb(248, 75, 75);
+}
+
+.register-btn:hover{
+    background-color: #fd3838;
+  transform: translateY(-2px);
+}
+
 button:hover {
   background-color: #4356b8;
   transform: translateY(-2px);
 }
 
-/* Botão Google */
-.google-btn {
+/* Modal de Sucesso */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.modal-content {
   background-color: #fff;
-  border: 1px solid #ddd;
-  color: #555;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
 }
 
-/* Texto "Não tem uma conta?" */
-.no-account {
-  font-size: 0.9rem;
-  color: #333;
-  margin: 10px 0;
-}
-
-/* Botão de cadastro */
-.register-btn {
-  background-color: #ff4d4d;
-}
-
-.register-btn:hover {
-  background-color: #e60000;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .form-container {
-    width: 90%;
-  }
+.modal-content h3 {
+  font-size: 1.5rem;
+  color: #5563DE;
 }
 </style>

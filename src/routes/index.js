@@ -1,19 +1,15 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { getAuth, onAuthStateChanged } from "firebase/auth"
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 import home from "../views/home.vue";
 import admin from "../views/admin.vue";
 import cadastro from "../views/cadastro.vue";
 import login from "../views/login.vue";
 
-
 const routes = [
-    {path:'/home', name: 'home', component: home, meta: {
-        requiresAuth: true
-    }},
-    {path:'/admin', name: 'admin', component: admin},
-    {path:'/cadastro', name: 'cadastro', component: cadastro},
-    {path:'/', name: 'login', component: login},
-   
+    { path: '/home', name: 'home', component: home, meta: { requiresAuth: true } },
+    { path: '/admin', name: 'admin', component: admin },
+    { path: '/cadastro', name: 'cadastro', component: cadastro },
+    { path: '/', name: 'login', component: login },
 ];
 
 const getCurrentUser = () => {
@@ -28,7 +24,6 @@ const getCurrentUser = () => {
         );
     });
 };
-
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),

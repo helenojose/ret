@@ -1,69 +1,109 @@
 import { createStore } from 'vuex';
+import { collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from "firebase/firestore";
+import { db } from '../main';
+import { getAuth } from "firebase/auth";
 
 export const store = createStore({
   state: {
     agendamentos: [],
+    agendamentosFiltrados: [],
   },
   mutations: {
     ADD_AGENDAMENTO(state, agendamento) {
       state.agendamentos.push(agendamento);
     },
-    FILTRAR_POR_DATA(state, data) {
-      state.agendamentosFiltrados = state.agendamentos.filter(a => a.data === data);
-    },
     SET_AGENDAMENTOS(state, agendamentos) {
       state.agendamentos = agendamentos;
     },
-    MARCAR_CONCLUIDO(state, agendamento) {
-      const index = state.agendamentos.findIndex(a =>
-        a.nome === agendamento.nome &&
-        a.data === agendamento.data &&
-        a.hora === agendamento.hora &&
-        a.valor === agendamento.valor
-      );
+    SET_AGENDAMENTOS_FILTRADOS(state, agendamentos) {
+      state.agendamentosFiltrados = agendamentos;
+    },
+    MARCAR_CONCLUIDO(state, agendamentoId) {
+      const index = state.agendamentos.findIndex(a => a.id === agendamentoId);
       if (index !== -1) {
         state.agendamentos[index].status = 'concluido';
       }
     },
-    EXCLUIR_AGENDAMENTO(state, agendamento) {
-      state.agendamentos = state.agendamentos.filter(a =>
-        !(a.nome === agendamento.nome &&
-          a.data === agendamento.data &&
-          a.hora === agendamento.hora &&
-          a.valor === agendamento.valor)
-      );
-    },
-    
-    LIMPAR_AGENDAMENTOS_DO_DIA(state, data) {
-      state.agendamentos = state.agendamentos.filter(a => a.data !== data);
+    EXCLUIR_AGENDAMENTO(state, agendamentoId) {
+      state.agendamentos = state.agendamentos.filter(a => a.id !== agendamentoId);
     },
   },
   actions: {
-    addAgendamento({ commit, state }, agendamento) {
-      commit('ADD_AGENDAMENTO', agendamento);
-      const agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || [];
-      agendamentos.push(agendamento);
-      localStorage.setItem('agendamentos', JSON.stringify(agendamentos));
+    async addAgendamento({ dispatch, commit }, agendamento) {
+      try {
+        const auth = getAuth();
+        if (auth.currentUser) {
+          agendamento.userId = auth.currentUser.uid;
+        }
+        const docRef = await addDoc(collection(db, "agendamentos"), agendamento);
+        commit('ADD_AGENDAMENTO', { ...agendamento, id: docRef.id });
+
+        // Atualiza a lista de horários filtrados para todos os usuários
+        await dispatch('filtrarPorData', agendamento.data);
+      } catch (error) {
+        console.error("Erro ao adicionar agendamento:", error);
+      }
     },
-    filtrarPorData({ commit }, data) {
-      commit('FILTRAR_POR_DATA', data);
+
+    async carregarAgendamentos({ commit }, loadAll = false) {
+      try {
+        const auth = getAuth();
+        let q;
+        if (loadAll || (auth.currentUser && auth.currentUser.email === "admin@email.com")) { 
+          q = query(collection(db, "agendamentos"));
+        } else {
+          q = query(collection(db, "agendamentos"), where("userId", "==", auth.currentUser.uid));
+        }
+
+        const querySnapshot = await getDocs(q);
+        let agendamentos = querySnapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+
+        commit('SET_AGENDAMENTOS', agendamentos);
+      } catch (error) {
+        console.error("Erro ao carregar agendamentos:", error);
+      }
     },
-    carregarAgendamentos({ commit }) {
-      const agendamentos = JSON.parse(localStorage.getItem('agendamentos')) || [];
-      commit('SET_AGENDAMENTOS', agendamentos);
+
+    async filtrarPorData({ commit }, dataFiltro) {
+      try {
+        const q = query(collection(db, "agendamentos"), where("data", "==", dataFiltro));
+        const querySnapshot = await getDocs(q);
+        
+        const agendamentos = querySnapshot.docs.map(docSnap => ({
+          id: docSnap.id,
+          ...docSnap.data(),
+        }));
+
+        commit('SET_AGENDAMENTOS_FILTRADOS', agendamentos);
+      } catch (error) {
+        console.error("Erro ao filtrar por data:", error);
+      }
     },
-    marcarConcluido({ commit, state }, agendamento) {
-      commit('MARCAR_CONCLUIDO', agendamento);
-      localStorage.setItem('agendamentos', JSON.stringify(state.agendamentos));
+
+    async marcarConcluido({ dispatch, commit }, agendamento) {
+      try {
+        const agendamentoDoc = doc(db, "agendamentos", agendamento.id);
+        await updateDoc(agendamentoDoc, { status: 'concluido' });
+        commit('MARCAR_CONCLUIDO', agendamento.id);
+
+        // Atualiza os horários disponíveis para todos os usuários
+        await dispatch('filtrarPorData', agendamento.data);
+      } catch (error) {
+        console.error("Erro ao atualizar agendamento:", error);
+      }
     },
-    excluirAgendamento({ commit, state }, agendamento) {
-      commit('EXCLUIR_AGENDAMENTO', agendamento);
-      localStorage.setItem('agendamentos', JSON.stringify(state.agendamentos));
-    },
-    // Ação para excluir todos os agendamentos do dia informado
-    limparAgendamentos({ commit, state }, data) {
-      commit('LIMPAR_AGENDAMENTOS_DO_DIA', data);
-      localStorage.setItem('agendamentos', JSON.stringify(state.agendamentos));
+
+    async excluirAgendamento({ dispatch, commit }, agendamento) {
+      try {
+        const agendamentoDoc = doc(db, "agendamentos", agendamento.id);
+        await deleteDoc(agendamentoDoc);
+        commit('EXCLUIR_AGENDAMENTO', agendamento.id);
+
+        // Atualiza os horários disponíveis para todos os usuários
+        await dispatch('filtrarPorData', agendamento.data);
+      } catch (error) {
+        console.error("Erro ao excluir agendamento:", error);
+      }
     },
   },
   getters: {

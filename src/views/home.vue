@@ -13,7 +13,7 @@
         <input type="text" v-model="nome" placeholder="Digite seu nome" required>
         
         <label for="data">Escolha o dia:</label>
-        <input type="date" v-model="data" required>
+        <input type="date" v-model="data" required @change="atualizarHorariosDisponiveis">
         
         <label for="hora">Escolha a hora:</label>
         <select v-model="hora" required>
@@ -68,7 +68,7 @@ export default {
       data: new Date().toISOString().substr(0, 10),
       hora: '',
       servico: '',
-      showModal: false, // controla a exibição do modal
+      showModal: false, 
       horariosMaster: [
         "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
         "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
@@ -80,16 +80,14 @@ export default {
       return this.servico ? parseFloat(this.servico).toFixed(2) : '0.00';
     },
     horariosDisponiveisFiltrados() {
-      if (this.data) {
-        const agendamentosDoDia = this.$store.state.agendamentos.filter(a => a.data === this.data);
-        const horariosOcupados = agendamentosDoDia.map(a => a.hora);
+      if (this.data && this.$store.state.agendamentosFiltrados.length) {
+        const horariosOcupados = this.$store.state.agendamentosFiltrados.map(a => a.hora);
         return this.horariosMaster.filter(hora => !horariosOcupados.includes(hora));
       }
       return this.horariosMaster;
     },
   },
   methods: {
-    // Em vez de agendar diretamente, abre o modal de confirmação
     prepareAgendamento() {
       if (!this.nome || !this.data || !this.hora || !this.servico) {
         alert("Por favor, preencha todos os campos antes de agendar.");
@@ -97,7 +95,6 @@ export default {
       }
       this.showModal = true;
     },
-    // Confirmar agendamento via modal
     confirmAgendamento() {
       const novoAgendamento = {
         nome: this.nome,
@@ -109,40 +106,35 @@ export default {
       };
 
       this.$store.dispatch('addAgendamento', novoAgendamento);
-      // Resetando os campos após o agendamento
       this.nome = '';
       this.hora = '';
       this.servico = '';
       this.showModal = false;
     },
-    // Cancelar a ação e fechar o modal
     cancelAgendamento() {
       this.showModal = false;
     },
     getServicoNome() {
-      switch (this.servico) {
-        case '25':
-          return 'CORTE DEGRADÊ';
-        case '35':
-          return 'DEGRADÊ + BARBA';
-        case '20':
-          return 'SOCIAL';
-        case '40':
-          return 'CORTE + PIGMENTAÇÃO';
-        case '55':
-          return 'REFLEXO ALINHADO';
-        case '70':
-          return 'NEVOU GELO';
-        default:
-          return 'SERVIÇO DESCONHECIDO';
-      }
+      const servicos = {
+        '25': 'CORTE DEGRADÊ',
+        '35': 'DEGRADÊ + BARBA',
+        '20': 'SOCIAL',
+        '40': 'CORTE + PIGMENTAÇÃO',
+        '55': 'REFLEXO ALINHADO',
+        '70': 'NEVOU GELO',
+      };
+      return servicos[this.servico] || 'SERVIÇO DESCONHECIDO';
     },
+    atualizarHorariosDisponiveis() {
+      this.$store.dispatch('filtrarPorData', this.data);
+    }
   },
   created() {
-    this.$store.dispatch('carregarAgendamentos');
+    this.atualizarHorariosDisponiveis();
   },
 };
 </script>
+
 
 <style scoped>
 /* Estilos existentes */
