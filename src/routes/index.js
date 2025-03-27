@@ -11,8 +11,8 @@ const routes = [
         requiresAuth: true
     }},
     {path:'/admin', name: 'admin', component: admin},
-    {path:'/', name: 'cadastro', component: cadastro},
-    {path:'/login', name: 'login', component: login},
+    {path:'/cadastro', name: 'cadastro', component: cadastro},
+    {path:'/', name: 'login', component: login},
    
 ];
 

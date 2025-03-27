@@ -1,42 +1,46 @@
 <template>
     <div class="auth-container">
         <div class="form-container login">
-      <h2>Login</h2>
-      <form @submit.prevent="login">  <!-- Login -->
-        <div class="form-group">
-          <label for="login-email">Email</label>
-          <input id="login-email" type="email" placeholder="Digite seu email" v-model="email"/>
+            <h2>Login</h2>
+            <form @submit.prevent="login">
+                <div class="form-group">
+                    <label for="login-email">Email</label>
+                    <input id="login-email" type="email" placeholder="Digite seu email" v-model="email"/>
+                </div>
+                <div class="form-group">
+                    <label for="login-senha">Senha</label>
+                    <input id="login-senha" type="password" placeholder="Digite sua senha" v-model="password"/>
+                    <p v-if="errMsg">{{ errMsg }}</p>
+                </div>
+                <button @click.prevent="login">Entrar</button>
+                <button @click.prevent="signInWithGoogle">Entrar com a conta do Google</button>
+                <p class="no-account">Não tem uma conta?</p>
+                <button class="register-btn" @click="goToRegister">Cadastre-se</button>
+            </form>
         </div>
-        <div class="form-group">
-          <label for="login-senha">Senha</label>
-          <input id="login-senha" type="password" placeholder="Digite sua senha" v-model="password"/>
-          <p v-if="errMsg">{{ errMsg }}</p>
-        </div>
-        <button @click.prevent="login">Entrar</button>
-        <button @click.prevent="signInWithGoogle">Entrar com a conta do Google</button>
-
-      </form>
-    </div>
+        
     </div>
 </template>
 
-
 <script setup>
+import { ref } from "vue";
+import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { useRouter } from 'vue-router';
 
-import { ref } from "vue"
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
-import { useRouter } from 'vue-router'
+
 const email = ref("");
 const password = ref("");
 const errMsg = ref();
 const router = useRouter();
+const popup = ref(null);
+
 
 const login = async () => {
     const auth = getAuth();
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
-        console.log("Logado com sucesso:", userCredential.user);
-        router.push('/home');  // Redireciona para a home
+        alert("Login efetuado com sucesso!", userCredential.user);
+        router.push('/home');
     } catch (error) {
         console.log(error.code);
         switch (error.code) {
@@ -59,16 +63,19 @@ const login = async () => {
 const signInWithGoogle = () => {
     const provider = new GoogleAuthProvider();
     signInWithPopup(getAuth(), provider)
-      .then((result) =>{
-        console.log(result.user)
-        router.push("/login")
+      .then((result) => {
+        console.log(result.user);
+        router.push("/home");
       })
-      .catch((error) =>{
+      .catch((error) => {
+        console.log(error);
+      });
+};
 
-      })
-}
+const goToRegister = () => {
+    router.push("/cadastro");
+};
 </script>
-
 
 <style scoped>
 /* Container principal */
@@ -99,7 +106,7 @@ const signInWithGoogle = () => {
   color: #333;
 }
 
-/* Grupos de inputs - deslocados para a esquerda */
+/* Grupos de inputs */
 .form-group {
   margin-bottom: 1.25rem;
   text-align: left;
@@ -121,7 +128,6 @@ const signInWithGoogle = () => {
   font-size: 1rem;
   transition: border-color 0.3s;
 }
-
 
 .form-group input:focus {
   outline: none;
@@ -157,35 +163,20 @@ button:hover {
   color: #555;
 }
 
-.google-btn img {
-  width: 20px;
-  margin-right: 0.5rem;
-}
-
-/* Divisor */
-.divider {
-  margin: 1rem 0;
+/* Texto "Não tem uma conta?" */
+.no-account {
   font-size: 0.9rem;
-  color: #aaa;
-  position: relative;
+  color: #333;
+  margin: 10px 0;
 }
 
-.divider::before,
-.divider::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 40%;
-  height: 1px;
-  background-color: #ddd;
+/* Botão de cadastro */
+.register-btn {
+  background-color: #ff4d4d;
 }
 
-.divider::before {
-  left: 0;
-}
-
-.divider::after {
-  right: 0;
+.register-btn:hover {
+  background-color: #e60000;
 }
 
 /* Responsividade */

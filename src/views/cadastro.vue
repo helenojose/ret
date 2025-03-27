@@ -1,5 +1,6 @@
 <template>
   <div class="auth-container">
+    
     <div class="form-container cadastro">
       <h2>Cadastro</h2>
       <form @submit.prevent="register">  <!-- Cadastro -->
@@ -15,25 +16,25 @@
         <button @click.prevent="signInWithGoogle">Entrar com a conta do Google</button>
       </form>
     </div>
-
+ 
     
   </div>
 </template>
 
 <script setup>
-
 import { ref } from "vue"
 import { getAuth, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { useRouter } from 'vue-router'
 const email = ref("");
 const password = ref("");
 const router = useRouter()
+const popup = ref(null);
 
 const register = () => {
     const auth = getAuth();
     createUserWithEmailAndPassword(auth, email.value, password.value)
     .then((userCredential) => {
-        console.log("Cadastrado com sucesso");
+        alert("Cadastrado com sucesso!");
         console.log(userCredential.user);
         router.push('/login');  // Redireciona para a home após cadastro
     })
