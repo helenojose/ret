@@ -43,7 +43,7 @@ const register = () => {
         showModal.value = true;  // Exibe o modal de sucesso
         setTimeout(() => {
             showModal.value = false;
-            router.push('/login');
+            router.push('/');
         }, 2000); // Fecha o modal e redireciona após 2 segundos
     })
     .catch((error) => {
@@ -57,7 +57,7 @@ const signInWithGoogle = () => {
     signInWithPopup(getAuth(), provider)
       .then((result) => {
         console.log(result.user);
-        router.push("/login");
+        router.push("/");
       })
       .catch((error) => {
         // Lide com erros se necessário
