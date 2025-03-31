@@ -1,6 +1,6 @@
 <template>
   <div class="admin-container">
-    <h1>Admin - Agendamentos</h1>
+    <h1>LISTA DOS AGENDAMENTOS</h1>
     
     <div class="filter-section">
       <label for="dataFiltro">Escolha o dia:</label>
@@ -14,8 +14,17 @@
         <div v-for="agendamento in filteredPendentes" :key="agendamento.id" class="agendamento-card">
           <h3>{{ agendamento.nome }}</h3>
           <p>{{ agendamento.servico }} - {{ agendamento.hora }} - R$ {{ agendamento.valor }}</p>
-          <button @click="marcarConcluido(agendamento)">Concluído</button>
-          <button @click="excluirAgendamento(agendamento)" class="excluir">Excluir</button>
+          <p>Celular: {{ agendamento.cell || 'Não informado' }}</p>
+          <p>Instagram: {{ agendamento.instagram || 'Não informado' }}</p>
+          <div class="content-button">
+            <div class="concluido">
+                 <button @click="marcarConcluido(agendamento)">Concluído</button>
+            </div>
+            <div class="excluir">
+                 <button @click="excluirAgendamento(agendamento)" class="excluir">Excluir</button>
+            </div>
+          </div>
+          
         </div>
       </div>
       <p v-else class="no-result">Nenhum agendamento pendente para essa data.</p>
@@ -25,6 +34,8 @@
         <div v-for="agendamento in filteredConcluidos" :key="agendamento.id" class="agendamento-card">
           <h3>{{ agendamento.nome }}</h3>
           <p>{{ agendamento.servico }} - {{ agendamento.hora }} - R$ {{ agendamento.valor }}</p>
+          <p>Celular: {{ agendamento.cell || 'Não informado' }}</p>
+          <p>Instagram: {{ agendamento.instagram || 'Não informado' }}</p>
         </div>
       </div>
       <p v-else class="no-result">Nenhum agendamento concluído para essa data.</p>
@@ -79,12 +90,8 @@ export default {
 };
 </script>
 
-
-
-<!-- (Os estilos permanecem inalterados) -->
-
-
 <style scoped>
+/* (Mantém os estilos existentes do seu código) */
 .admin-container {
   max-width: 800px;
   margin: 20px auto;
@@ -94,11 +101,23 @@ export default {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-family: 'Arial', sans-serif;
 }
-
 h1 {
   text-align: center;
   color: #4CAF50;
   margin-bottom: 20px;
+}
+
+.content-button{
+  display: flex;
+}
+
+.content-button button{
+  width: 170px;
+  
+}
+
+.concluido{
+  padding-right: 1rem;
 }
 
 .filter-section {
@@ -109,12 +128,10 @@ h1 {
   margin-bottom: 20px;
   align-items: center;
 }
-
 .filter-section label {
   font-size: 16px;
   color: #333;
 }
-
 .filter-section input[type="date"] {
   padding: 6px;
   font-size: 14px;
@@ -122,7 +139,6 @@ h1 {
   border-radius: 5px;
   width: 150px;
 }
-
 .filter-section button {
   padding: 6px 12px;
   font-size: 14px;
@@ -132,39 +148,22 @@ h1 {
   border-radius: 5px;
   cursor: pointer;
 }
-
 .filter-section button:hover {
   background: #16ac55;
-}
-
-/* Botão para excluir todos os agendamentos do dia */
-.filter-section button.excluir-todos {
-  padding: 6px 12px;
-  font-size: 14px;
-  background: #e74c3c; /* Vermelho */
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.filter-section button.excluir-todos:hover {
-  background: #c0392b; /* Vermelho mais escuro */
 }
 .results h2 {
   margin-top: 30px;
   color: #333;
 }
-
 .agendamento-list {
   display: flex;
   flex-wrap: wrap;
   gap: 15px;
   margin-top: 10px;
 }
-
 .agendamento-card {
   flex: 1 1 300px;
+  width: 150px;
   background: #e0f7fa;
   border-radius: 10px;
   padding: 15px;
@@ -173,24 +172,16 @@ h1 {
   flex-direction: column;
   justify-content: space-between;
 }
-
 .agendamento-card h3 {
   margin: 0 0 8px;
   color: #333;
   font-size: 18px;
 }
-
 .agendamento-card p {
   margin: 0 0 10px;
   color: #555;
   font-size: 16px;
 }
-
-.btn-actions {
-  display: flex;
-  gap: 10px;
-}
-
 .agendamento-card button {
   padding: 6px 10px;
   background: #4CAF50;
@@ -200,20 +191,15 @@ h1 {
   font-size: 14px;
   cursor: pointer;
 }
-
 .agendamento-card button:hover {
   background: #45a049;
 }
-
-/* Botão para excluir agendamento individual */
 .agendamento-card button.excluir {
   background: #e74c3c;
 }
-
 .agendamento-card button.excluir:hover {
   background: #c0392b;
 }
-
 .no-result,
 .no-filter {
   text-align: center;
@@ -221,8 +207,7 @@ h1 {
   margin-top: 20px;
   font-size: 16px;
 }
-
-/* Ajustes para telas de celulares */
+/* Responsividade */
 @media (max-width: 600px) {
   .filter-section {
     flex-direction: column;
@@ -250,5 +235,13 @@ h1 {
     font-size: 14px;
     padding: 4px 8px;
   }
+  .content-button button{
+    width: 140px;
+  }  
+  .excluir{
+    margin-left: .1rem;
+  }
+
+
 }
 </style>

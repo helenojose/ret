@@ -10,19 +10,13 @@
         <div class="form-group">
           <label for="login-senha">Senha</label>
           <input id="login-senha" type="password" placeholder="Digite sua senha" v-model="password"/>
-          <p v-if="errMsg">{{ errMsg }}</p>
+          <p class="errMsg" v-if="errMsg">{{ errMsg }}</p>
         </div>
         <button @click.prevent="login">Entrar</button>
-        <button @click.prevent="signInWithGoogle">Entrar com a conta do Google</button>
         <p class="no-account">Não tem uma conta?</p>
         <button class="register-btn" @click="goToRegister">Cadastre-se</button>
       </form>
     </div>
-    <div v-if="showModal" class="modal">
-    <div class="modal-content">
-      <h3>Login realizado com sucesso!</h3>
-    </div>
-  </div>
   </div>
 
   <!-- Modal de Sucesso -->
@@ -30,6 +24,7 @@
 </template>
 
 <script setup>
+import Swal from 'sweetalert2';
 import { ref } from "vue";
 import { getAuth, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useRouter } from 'vue-router';
@@ -46,7 +41,11 @@ const login = async () => {
         const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
         showModal.value = true;  // Exibe o modal de sucesso
         setTimeout(() => {
-            showModal.value = false;
+            Swal.fire({
+            title: "Login Efetuado Com Sucesso!",
+            text: "RET CORTES",
+            icon: "success"
+          });
             router.push('/home');
         }, 2000); // Fecha o modal e redireciona após 2 segundos
     } catch (error) {
@@ -66,18 +65,6 @@ const login = async () => {
                 break;
         }
     }
-};
-
-const signInWithGoogle = () => {
-    const provider = new GoogleAuthProvider();
-    signInWithPopup(getAuth(), provider)
-      .then((result) => {
-        console.log(result.user);
-        router.push("/home");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
 };
 
 const goToRegister = () => {
@@ -148,7 +135,7 @@ button {
   padding: 0.75rem;
   border: none;
   border-radius: 6px;
-  background-color: #5563DE;
+  background-color: #45a049;
   color: #fff;
   font-size: 1rem;
   cursor: pointer;
@@ -166,8 +153,14 @@ button {
 }
 
 button:hover {
-  background-color: #4356b8;
+  background-color: #39833c;
   transform: translateY(-2px);
+}
+
+.errMsg{
+  text-align: center;
+  color: #fd3838;
+  font-weight: 500;
 }
 
 /* Modal de Sucesso */

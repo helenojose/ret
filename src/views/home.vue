@@ -7,7 +7,18 @@
         </div>
         <div class="barbearia-nome">RET CORTES</div>
       </div>
+
       <h1>AGENDAMENTOS</h1>
+
+      <div class="user-info">
+        <div class="user-fone" v-if="usuario">
+          <p>Celular: {{ usuario.celular || 'Não informado' }}</p>
+        </div>
+        <div class="user-insta">
+          <p>Instagram: {{ usuario.instagram || 'Não informado' }}</p>
+        </div>
+      </div>
+      
       <form @submit.prevent="prepareAgendamento">
         <label for="nome">Seu nome:</label>
         <input type="text" v-model="nome" placeholder="Digite seu nome" required>
@@ -61,6 +72,7 @@
 </template>
 
 <script>
+import Swal from 'sweetalert2';
 export default {
   data() {
     return {
@@ -68,7 +80,7 @@ export default {
       data: new Date().toISOString().substr(0, 10),
       hora: '',
       servico: '',
-      showModal: false, 
+      showModal: false,
       horariosMaster: [
         "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
         "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00"
@@ -85,6 +97,9 @@ export default {
         return this.horariosMaster.filter(hora => !horariosOcupados.includes(hora));
       }
       return this.horariosMaster;
+    },
+    usuario() {
+      return this.$store.state.usuario;
     },
   },
   methods: {
@@ -103,9 +118,19 @@ export default {
         servico: this.getServicoNome(),
         valor: this.servico,
         status: 'pendente',
+        // Pega os dados do usuário do store (celular e instagram) CORRIGIDO
+        cell: this.usuario ? this.usuario.celular || '' : '',
+        instagram: this.usuario ? this.usuario.instagram || '' : ''
       };
 
       this.$store.dispatch('addAgendamento', novoAgendamento);
+
+      Swal.fire({
+      title: "Agendamento Realizado Com Sucesso!",
+      text: "RET CORTES",
+      icon: "success"
+    });
+
       this.nome = '';
       this.hora = '';
       this.servico = '';
@@ -130,14 +155,14 @@ export default {
     }
   },
   created() {
+    this.$store.dispatch('carregarUsuario'); // Pega os dados do usuário
     this.atualizarHorariosDisponiveis();
-  },
+  }
 };
 </script>
 
-
 <style scoped>
-/* Estilos existentes */
+/* (Mantém os estilos existentes do seu código) */
 .wrapper {
   display: flex;
   justify-content: center;
@@ -146,7 +171,6 @@ export default {
   background: #f5f5f5;
   padding: 20px;
 }
-
 .container {
   background: #ffffff;
   padding: 30px;
@@ -155,7 +179,6 @@ export default {
   width: 350px;
   text-align: center;
 }
-
 .header {
   margin-bottom: 20px;
 }
@@ -169,13 +192,27 @@ export default {
   color: #4CAF50;
   margin-top: 10px;
 }
-
+.user-info {
+  margin-bottom: 20px;
+  text-align: left;
+  font-size: 14px;
+  color: #333;
+  border-radius: .5rem;
+  opacity: 0.9;
+}
+.user-insta{
+  color:#45a049;
+  font-size: 17px;
+}
+.user-fone{
+  color:#45a049;
+  font-size: 17px;
+}
 h1 {
   margin-bottom: 25px;
   font-size: 22px;
   color: #4CAF50;
 }
-
 label {
   display: block;
   margin-bottom: 8px;
@@ -184,7 +221,6 @@ label {
   text-align: left;
   color: #000;
 }
-
 input, select {
   width: 318px;
   height: 35px;
@@ -193,7 +229,6 @@ input, select {
   border-radius: 8px;
   font-size: 14px;
 }
-
 button {
   width: 100%;
   padding: 10px;
@@ -205,25 +240,21 @@ button {
   cursor: pointer;
   transition: background 0.3s;
 }
-
 button:hover {
-  background: #45a049;
+  background-color: #39833c;
+  transform: translateY(-2px);
 }
-
 #avisoFuncionamento {
   margin-top: 20px;
   font-size: 18px;
   color: #f44336;
 }
-
 .total-valor {
   font-size: 16px;
   font-weight: bold;
   color: #4CAF50;
   margin-bottom: 20px;
 }
-
-/* Estilos do modal de confirmação */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -235,7 +266,6 @@ button:hover {
   justify-content: center;
   align-items: center;
 }
-
 .modal {
   background: #fff;
   padding: 20px 30px;
@@ -243,30 +273,25 @@ button:hover {
   text-align: center;
   width: 300px;
 }
-
 .modal h2 {
   margin-bottom: 15px;
   color: #4CAF50;
 }
-
 .modal p {
   margin: 5px 0;
   font-size: 14px;
   color: #333;
 }
-
 .modal-buttons {
   margin-top: 20px;
   display: flex;
   justify-content: space-between;
 }
-
 .modal-buttons button {
   width: 45%;
   padding: 8px;
 }
-
-/* Responsividade para dispositivos móveis */
+/* Responsividade */
 @media (max-width: 600px) {
   .container {
     width: 100%;
