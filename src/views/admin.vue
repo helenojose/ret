@@ -44,6 +44,10 @@
     <div v-else class="no-filter">
       <p>Por favor, escolha uma data e clique em "Buscar".</p>
     </div>
+    <!-- Rodapé com assinatura -->
+    <footer class="assinatura">
+      © {{ new Date().getFullYear() }} Desenvolvido por Heleno José
+    </footer>
   </div>
 </template>
 
@@ -86,6 +90,7 @@ export default {
       return;
     }
     this.$store.dispatch('carregarAgendamentos', true);
+    console.log("© " + new Date().getFullYear() + " Desenvolvido por Heleno José");
   },
 };
 </script>
@@ -243,5 +248,14 @@ h1 {
   }
 
 
+}
+
+.assinatura {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: auto;
+  padding: 10px 0;
+  background: #f5f5f5;
 }
 </style>

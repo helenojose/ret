@@ -3,9 +3,11 @@
     <div class="container">
       <div class="header">
         <div class="logo-placeholder">
-          <img src="../assets/images/logo7 - Copia.png" alt="logo">
+          <img src="../assets/images/logo.png" alt="logo">
         </div>
-        <div class="barbearia-nome">RET CORTES</div>
+        <div class="barbearia-nome">RET BARBESHOP
+            <p>ESTÉTICA MASCULINA</p>
+        </div>
       </div>
 
       <h1>AGENDAMENTOS</h1>
@@ -68,6 +70,11 @@
         </div>
       </div>
     </div>
+
+    <!-- Rodapé com assinatura -->
+    <footer class="assinatura">
+      © {{ new Date().getFullYear() }} Desenvolvido por Heleno José
+    </footer>
   </div>
 </template>
 
@@ -118,7 +125,6 @@ export default {
         servico: this.getServicoNome(),
         valor: this.servico,
         status: 'pendente',
-        // Pega os dados do usuário do store (celular e instagram) CORRIGIDO
         cell: this.usuario ? this.usuario.celular || '' : '',
         instagram: this.usuario ? this.usuario.instagram || '' : ''
       };
@@ -126,10 +132,10 @@ export default {
       this.$store.dispatch('addAgendamento', novoAgendamento);
 
       Swal.fire({
-      title: "Agendamento Realizado Com Sucesso!",
-      text: "RET CORTES",
-      icon: "success"
-    });
+        title: "Agendamento Realizado Com Sucesso!",
+        text: "RET CORTES",
+        icon: "success"
+      });
 
       this.nome = '';
       this.hora = '';
@@ -157,20 +163,22 @@ export default {
   created() {
     this.$store.dispatch('carregarUsuario'); // Pega os dados do usuário
     this.atualizarHorariosDisponiveis();
+    console.log("© " + new Date().getFullYear() + " Desenvolvido por Heleno José");
   }
 };
 </script>
 
 <style scoped>
-/* (Mantém os estilos existentes do seu código) */
+/* Layout principal reestruturado */
 .wrapper {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   min-height: 100vh;
   background: #f5f5f5;
   padding: 20px;
 }
+
+/* Centraliza o container horizontalmente */
 .container {
   background: #ffffff;
   padding: 30px;
@@ -178,41 +186,60 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   width: 350px;
   text-align: center;
+  margin: auto;
 }
+
 .header {
   margin-bottom: 20px;
 }
+
+img{
+  width: 100px;
+}
+
 .logo-placeholder img {
   max-width: 100%;
   height: auto;
 }
+
 .barbearia-nome {
   font-size: 24px;
   font-weight: bold;
-  color: #4CAF50;
+  color: #000000;
   margin-top: 10px;
 }
+
+.barbearia-nome p{
+  font-size: 12px;
+  margin-top: -.2rem;
+   color: #747474;
+}
+
 .user-info {
   margin-bottom: 20px;
   text-align: left;
   font-size: 14px;
   color: #333;
-  border-radius: .5rem;
+  border-radius: 0.5rem;
   opacity: 0.9;
 }
-.user-insta{
-  color:#45a049;
+
+.user-insta {
+  color: #45a049;
   font-size: 17px;
 }
-.user-fone{
-  color:#45a049;
+
+.user-fone {
+  color: #45a049;
   font-size: 17px;
 }
+
 h1 {
   margin-bottom: 25px;
   font-size: 22px;
   color: #4CAF50;
 }
+
 label {
   display: block;
   margin-bottom: 8px;
@@ -221,6 +248,7 @@ label {
   text-align: left;
   color: #000;
 }
+
 input, select {
   width: 318px;
   height: 35px;
@@ -229,6 +257,7 @@ input, select {
   border-radius: 8px;
   font-size: 14px;
 }
+
 button {
   width: 100%;
   padding: 10px;
@@ -240,21 +269,25 @@ button {
   cursor: pointer;
   transition: background 0.3s;
 }
+
 button:hover {
   background-color: #39833c;
   transform: translateY(-2px);
 }
+
 #avisoFuncionamento {
   margin-top: 20px;
   font-size: 18px;
   color: #f44336;
 }
+
 .total-valor {
   font-size: 16px;
   font-weight: bold;
   color: #4CAF50;
   margin-bottom: 20px;
 }
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -266,6 +299,7 @@ button:hover {
   justify-content: center;
   align-items: center;
 }
+
 .modal {
   background: #fff;
   padding: 20px 30px;
@@ -273,29 +307,34 @@ button:hover {
   text-align: center;
   width: 300px;
 }
+
 .modal h2 {
   margin-bottom: 15px;
   color: #4CAF50;
 }
+
 .modal p {
   margin: 5px 0;
   font-size: 14px;
   color: #333;
 }
+
 .modal-buttons {
   margin-top: 20px;
   display: flex;
   justify-content: space-between;
 }
+
 .modal-buttons button {
   width: 45%;
   padding: 8px;
 }
+
 /* Responsividade */
 @media (max-width: 600px) {
   .container {
     width: 100%;
-    max-width: 350px;
+    max-width: 290px;
     padding: 1.7rem;
   }
   h1 {
@@ -320,5 +359,15 @@ button:hover {
   .total-valor {
     font-size: 14px;
   }
+}
+
+/* Rodapé com assinatura fixado na parte inferior */
+.assinatura {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: auto;
+  padding: 10px 0;
+  background: #f5f5f5;
 }
 </style>
