@@ -42,7 +42,7 @@
           <option value="25">CORTE DEGRADÊ</option>
           <option value="35">DEGRADÊ + BARBA</option>
           <option value="20">SOCIAL</option>
-          <option value="40">CORTE + PIGMENTAÇÃO</option>
+          <option value="35">CORTE + PIGMENTAÇÃO</option>
           <option value="55">REFLEXO ALINHADO</option>
           <option value="70">NEVOU GELO</option>
         </select>
@@ -150,7 +150,7 @@ export default {
         '25': 'CORTE DEGRADÊ',
         '35': 'DEGRADÊ + BARBA',
         '20': 'SOCIAL',
-        '40': 'CORTE + PIGMENTAÇÃO',
+        '35': 'CORTE + PIGMENTAÇÃO',
         '55': 'REFLEXO ALINHADO',
         '70': 'NEVOU GELO',
       };
