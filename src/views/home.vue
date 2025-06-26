@@ -12,6 +12,7 @@
 
       <h1>AGENDAMENTOS</h1>
 
+
       <div class="user-info">
         <div class="user-fone" v-if="usuario">
           <p>Celular: {{ usuario.celular || 'Não informado' }}</p>
@@ -20,8 +21,15 @@
           <p>Instagram: {{ usuario.instagram || 'Não informado' }}</p>
         </div>
       </div>
-      
-      <form @submit.prevent="prepareAgendamento">
+
+       <!-- Se agendamento desativado, mostrar mensagem gigante -->
+      <div v-if="!statusAgendamento" class="aviso">
+        <h2>Estamos de folga!</h2>
+        <p>Os agendamentos estão temporariamente desativados.</p>
+      </div>
+
+       <!-- Se agendamento ativo, mostrar formulário -->
+      <form v-else @submit.prevent="prepareAgendamento">
         <label for="nome">Seu nome:</label>
         <input type="text" v-model="nome" placeholder="Digite seu nome" required>
         
@@ -80,6 +88,9 @@
 
 <script>
 import Swal from 'sweetalert2';
+import {doc, getDoc, onSnapshot} from "firebase/firestore";
+import { db } from  '../main';
+
 export default {
   data() {
     return {
@@ -92,6 +103,9 @@ export default {
         "09:00", "09:30", "10:00", "10:30", "11:00", "11:30",
         "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30", "18:00", "18:30"," 19:00", "19:30", "20:00"
       ],
+      statusAgendamento: true,
+      mensagemStatus: '',
+      mostrarMensagem: false,
     };
   },
   computed: {
@@ -161,11 +175,28 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch('carregarUsuario'); // Pega os dados do usuário
+    // Assinar mudanças em tempo real no status do agendamento
+    const ref = doc(db, "config", "status");
+    this.unsubscribe = onSnapshot(ref, (snapshot) => {
+      if (snapshot.exists()) {
+        const dados = snapshot.data();
+        this.statusAgendamento = dados.agendamentoAtivo;
+        this.mensagemStatus = dados.mensagemStatus || '';
+        this.mostrarMensagem = !dados.agendamentoAtivo;
+      }
+    });
+    // carregue outras coisas
+    this.$store.dispatch('carregarUsuario');
     this.atualizarHorariosDisponiveis();
+
     console.log("© " + new Date().getFullYear() + " Desenvolvido por Heleno José");
+  },
+  beforeUnmount() {
+    if (this.unsubscribe) {
+      this.unsubscribe(); // para não vazar listener
+    }
   }
-};
+}
 </script>
 
 <style scoped>
@@ -190,6 +221,17 @@ export default {
 }
 
 .header {
+  margin-bottom: 20px;
+}
+
+.aviso{
+  background-color: #ffdddd;
+  color: #b71c1c;
+  padding: 40px;
+  border-radius: 12px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
   margin-bottom: 20px;
 }
 

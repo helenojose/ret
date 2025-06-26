@@ -1,7 +1,12 @@
 <template>
   <div class="admin-container">
     <h1>LISTA DOS AGENDAMENTOS</h1>
-    
+    <div class="status">
+      <button @click="alternarAgendamento" :style="{backgroundColor: agendamentoAtivo ? '#e74c3c' : '#2ecc71'}">
+        {{ agendamentoAtivo ? 'Desativar Agendamentos' : 'Ativar Agendamentos' }}
+      </button>
+      <p>Status atual: <strong>{{ agendamentoAtivo ? 'AGENDAMENTO ATIVO' : 'AGENDAMENTO DESATIVADO'}}</strong></p>
+    </div>
     <div class="filter-section">
       <label for="dataFiltro">Escolha o dia:</label>
       <input type="date" v-model="dataFiltro" id="dataFiltro" />
@@ -52,10 +57,14 @@
 </template>
 
 <script>
+import {doc, getDoc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore';
+import { db } from '../main';
+
 export default {
   data() {
     return {
       dataFiltro: '',
+      agendamentoAtivo: true,
     };
   },
   computed: {
@@ -67,6 +76,45 @@ export default {
     },
   },
   methods: {
+    async ensureStatusDoc() {
+      const ref = doc(db, "config", "status");
+      const snap = await getDoc(ref);
+      if(!snap.exists()){
+        await setDoc(ref, {
+          agendamentoAtivo: true,
+          mensagemStatus: 'Estamos de Folga Hoje',
+      });
+    }
+  },
+          async alternarAgendamento() {
+        const ref = doc(db, "config", "status");
+
+        // Pega o status atual
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const atual = snap.data().agendamentoAtivo;
+
+          // Atualiza com o inverso
+          await updateDoc(ref, {
+            agendamentoAtivo: !atual
+          });
+
+          // Atualiza o botão local também
+          this.agendamentoAtivo = !atual;
+        }
+      },
+
+
+    async carregarStatus(){
+      const ref = doc(db, "config", "status");
+      const snp = await getDoc(ref);
+      if (snp.exists()){
+        this.agendamentoAtivo = snp.data().agendamentoAtivo
+      }
+    },
+
+
+
     filtrarPorData() {
       if (!this.dataFiltro) {
         alert("Escolha uma data válida!");
@@ -89,6 +137,16 @@ export default {
       this.$router.push('/');
       return;
     }
+
+    this.ensureStatusDoc();
+
+    const ref = doc(db, "config", "status");
+    onSnapshot(ref, (snap) => {
+      if (snap.exists()) {
+        this.agendamentoAtivo = snap.data().agendamentoAtivo;
+      }
+    });
+    this.carregarStatus();
     this.$store.dispatch('carregarAgendamentos', true);
     console.log("© " + new Date().getFullYear() + " Desenvolvido por Heleno José");
   },
@@ -110,6 +168,20 @@ h1 {
   text-align: center;
   color: #4CAF50;
   margin-bottom: 20px;
+}
+
+.status{
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.status button{
+  padding: 10px 20px;
+  font-size: 16px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
 .content-button{
