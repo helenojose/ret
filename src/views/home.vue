@@ -113,11 +113,23 @@ export default {
       return this.servico ? parseFloat(this.servico).toFixed(2) : '0.00';
     },
     horariosDisponiveisFiltrados() {
+      let horarios = this.horariosMaster;
       if (this.data && this.$store.state.agendamentosFiltrados.length) {
         const horariosOcupados = this.$store.state.agendamentosFiltrados.map(a => a.hora);
-        return this.horariosMaster.filter(hora => !horariosOcupados.includes(hora));
+        horarios = horarios.filter(hora => !horariosOcupados.includes(hora));
       }
-      return this.horariosMaster;
+      const hoje = new Date().toISOString().substr(0, 10);
+      if (this.data === hoje){
+        const agora = new Date();
+        const horaAtual = agora.getHours();
+        const minutoAtual = agora.getMinutes();
+
+        horarios = horarios.filter(hora => {
+          const [ h, m] = hora.split(":").map(Number);
+          return h > horaAtual || (h === horaAtual && minutoAtual );
+        });
+      }
+      return horarios;
     },
     usuario() {
       return this.$store.state.usuario;
