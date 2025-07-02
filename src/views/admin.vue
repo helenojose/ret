@@ -1,5 +1,19 @@
 <template>
   <div class="admin-container">
+
+    <div class="financeiro-section">
+      <h2>Financeiro</h2>
+      <div class="filter-section">
+        <label for="dataInicial">Data Inicial:</label>
+        <input type="date" v-model="dataInicial" id="dataInicial" @change="filtrarFinanceiro"/>
+
+        <label for="dataFInal">Data Final:</label>
+        <input type="date" v-model="dataFinal" id="dataFinal" @change="filtrarFinanceiro"/>
+
+         <p>Total dos serviços concluídos no período: </p> <h3>{{ totalFinanceiro.toFixed(2) }}</h3>
+      </div>
+      </div>
+
     <h1>LISTA DOS AGENDAMENTOS</h1>
     <div class="status">
       <button @click="alternarAgendamento" :style="{backgroundColor: agendamentoAtivo ? '#e74c3c' : '#2ecc71'}">
@@ -57,7 +71,7 @@
 </template>
 
 <script>
-import {doc, getDoc, updateDoc, onSnapshot, setDoc } from 'firebase/firestore';
+import {doc, getDoc, updateDoc, onSnapshot, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../main';
 
 export default {
@@ -65,6 +79,10 @@ export default {
     return {
       dataFiltro: '',
       agendamentoAtivo: true,
+      dataInicial:'',
+      dataFinal:'',
+      agendamentoFinanceiro: [],
+      totalFinanceiro: 0,
     };
   },
   computed: {
@@ -76,60 +94,87 @@ export default {
     },
   },
   methods: {
-    async ensureStatusDoc() {
-      const ref = doc(db, "config", "status");
-      const snap = await getDoc(ref);
-      if(!snap.exists()){
-        await setDoc(ref, {
-          agendamentoAtivo: true,
-          mensagemStatus: 'Estamos de Folga Hoje',
-      });
-    }
-  },
-          async alternarAgendamento() {
+      async ensureStatusDoc() {
         const ref = doc(db, "config", "status");
-
-        // Pega o status atual
         const snap = await getDoc(ref);
-        if (snap.exists()) {
-          const atual = snap.data().agendamentoAtivo;
-
-          // Atualiza com o inverso
-          await updateDoc(ref, {
-            agendamentoAtivo: !atual
+          if(!snap.exists()){
+            await setDoc(ref, {
+              agendamentoAtivo: true,
+              mensagemStatus: 'Estamos de Folga Hoje',
           });
-
-          // Atualiza o botão local também
-          this.agendamentoAtivo = !atual;
+        }
+      },
+        
+      async alternarAgendamento() {
+      const ref = doc(db, "config", "status");
+      // Pega o status atual
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+      const atual = snap.data().agendamentoAtivo;
+      // Atualiza com o inverso
+      await updateDoc(ref, {
+        agendamentoAtivo: !atual
+      });
+      // Atualiza o botão local também
+        this.agendamentoAtivo = !atual;
         }
       },
 
+     async carregarStatus(){
+       const ref = doc(db, "config", "status");
+        const snp = await getDoc(ref);
+       if (snp.exists()){
+          this.agendamentoAtivo = snp.data().agendamentoAtivo
+        }
+      },
 
-    async carregarStatus(){
-      const ref = doc(db, "config", "status");
-      const snp = await getDoc(ref);
-      if (snp.exists()){
-        this.agendamentoAtivo = snp.data().agendamentoAtivo
-      }
-    },
-
-
-
-    filtrarPorData() {
+      filtrarPorData() {
       if (!this.dataFiltro) {
         alert("Escolha uma data válida!");
         return;
       }
       this.$store.dispatch('filtrarPorData', this.dataFiltro);
+      },
+      marcarConcluido(agendamento) {
+        this.$store.dispatch('marcarConcluido', agendamento);
+      },
+      excluirAgendamento(agendamento) {
+        this.$store.dispatch('excluirAgendamento', agendamento);
+        this.filtrarPorData();
+      },
+
+      async filtrarFinanceiro(){
+      if(!this.dataInicial || !this.dataFinal){
+        this.agendamentoFinanceiro = []
+        this.totalFinanceiro = 0;
+        return;
+      }
+      if(this.dataFinal < this.dataInicial){
+        alert("A data final deve ser maior ou igual a data inicial!");
+        return;
+      }
+      try{
+        const agendamentoRef = collection(db,"agendamentos");
+        const q = query(
+          agendamentoRef,
+          where("status", "==", "concluido"),
+          where("data", ">=", this.dataInicial),
+          where("data", "<=", this.dataFinal)
+        );
+        const snapshot = await getDocs(q);
+
+        this.agendamentoFinanceiro = snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+
+        this.totalFinanceiro = this.agendamentoFinanceiro.reduce((acc, ag) =>{
+          return acc + parseFloat(ag.valor || '0');
+        }, 0);  
+      }catch (error) {
+          console.error("Erro ao bsucar dados financeiros", error);
+        }
+        console.log("Agendamentos encontrados:", this.agendamentoFinanceiro);
+      },
     },
-    marcarConcluido(agendamento) {
-      this.$store.dispatch('marcarConcluido', agendamento);
-    },
-    excluirAgendamento(agendamento) {
-      this.$store.dispatch('excluirAgendamento', agendamento);
-      this.filtrarPorData();
-    },
-  },
+
   created() {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('key') !== 'secreta') {
@@ -169,6 +214,19 @@ h1 {
   color: #4CAF50;
   margin-bottom: 20px;
 }
+
+.financeiro-section h2{
+  text-align: center;
+}
+
+.financeiro-section p{
+  font-weight: 700;
+}
+
+.financeiro-section h3{
+  color: #16ac55;
+}
+
 
 .status{
   text-align: center;

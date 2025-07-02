@@ -21,7 +21,10 @@
           <p>Instagram: {{ usuario.instagram || 'Não informado' }}</p>
         </div>
       </div>
-
+      <div v-if="agendamentoPendente" class="alerta-agendamento">
+        ⚠️ Você já tem um agendamento pendente para o dia <strong>{{ formatarDataBR(agendamentoPendente.data) }}</strong>,
+        às <strong>{{ agendamentoPendente.hora }}</strong> – {{ agendamentoPendente.servico }}.
+      </div>
        <!-- Se agendamento desativado, mostrar mensagem gigante -->
       <div v-if="!statusAgendamento" class="aviso">
         <h2>Agendamentos temporariamente Indisponiveis!</h2>
@@ -88,8 +91,9 @@
 
 <script>
 import Swal from 'sweetalert2';
-import {doc, getDoc, onSnapshot} from "firebase/firestore";
+import {doc, getDoc, onSnapshot, collection, query, where, getDocs} from "firebase/firestore";
 import { db } from  '../main';
+import { getAuth } from "firebase/auth";
 
 export default {
   data() {
@@ -106,6 +110,7 @@ export default {
       statusAgendamento: true,
       mensagemStatus: '',
       mostrarMensagem: false,
+      agendamentoPendente: null,
     };
   },
   computed: {
@@ -184,7 +189,36 @@ export default {
     },
     atualizarHorariosDisponiveis() {
       this.$store.dispatch('filtrarPorData', this.data);
-    }
+    },
+    async verificarAgendamentoPendente(){
+      try{
+        const auth = getAuth();
+        const userId = auth.currentUser?.uid;
+        if(!userId) return;
+
+        const agendamentoRef = collection(db, "agendamentos");
+        const q = query(
+          agendamentoRef,
+          where("userId", "==", userId),
+          where("status", "==", "pendente"),
+        );
+        const snapshot = await getDocs(q);
+
+        if(!snapshot.empty){
+           //pega o primeiro agendamento pendente
+           this.agendamentoPendente = snapshot.docs[0].data();
+        }else{
+          this.agendamentoPendente = null;
+        }
+      }catch(error){
+        console.error("Erro ao verificar agendamento pendente:", error);
+      }
+    },
+    formatarDataBR(dataISO){
+      if (!dataISO) return '';
+      const partes = dataISO.split('-'); //["aaaa", "mm", "dd"]
+      return `${partes [2]}/${partes[1]}/${partes[0]}`;
+    },
   },
   created() {
     // Assinar mudanças em tempo real no status do agendamento
@@ -202,6 +236,8 @@ export default {
     this.atualizarHorariosDisponiveis();
 
     console.log("© " + new Date().getFullYear() + " Desenvolvido por Heleno José");
+
+    this.verificarAgendamentoPendente();
   },
   beforeUnmount() {
     if (this.unsubscribe) {
@@ -246,6 +282,19 @@ export default {
   text-align: center;
   margin-bottom: 20px;
 }
+
+.alerta-agendamento {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  color: #856404;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+
 
 img{
   width: 100px;
