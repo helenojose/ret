@@ -24,8 +24,8 @@
 
        <!-- Se agendamento desativado, mostrar mensagem gigante -->
       <div v-if="!statusAgendamento" class="aviso">
-        <h2>Estamos de folga!</h2>
-        <p>Os agendamentos estão temporariamente desativados.</p>
+        <h2>Agendamentos temporariamente Indisponiveis!</h2>
+        <p>Entre em contato com: insta: <a href="https://www.instagram.com/retdocorte01?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==">retdocorte01</a> whatsApp: <a href="wa.me/5581996627021 ">Contato</a></p>
       </div>
 
        <!-- Se agendamento ativo, mostrar formulário -->
@@ -241,7 +241,7 @@ export default {
   color: #b71c1c;
   padding: 40px;
   border-radius: 12px;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: bold;
   text-align: center;
   margin-bottom: 20px;
